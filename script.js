@@ -8,7 +8,7 @@ let gamePlaying = false; // Game is paused by default
 const gravity = 0.4; // Gravité
 const speed = 5.2; // Vitesse de l'oiseau
 const size = [51, 36]; // Taille de l'oiseau
-const jump = -11.5; // Force du saut
+const jump = -10.5; // Force du saut
 
 const cTenth = canvas.width / 10; // 1/10 de la largeur du canvas
 
@@ -94,6 +94,67 @@ const render = () => {
     ctx.fillText(`Cliquez pour jouer`, 48, 535);
     ctx.font = "bold 30px courier";
   }
+
+  //pipe display
+  if (gamePlaying) {
+    pipes.map((pipe) => {
+      pipe[0] -= speed;
+
+      // top pipe
+      ctx.drawImage(
+        img,
+        432,
+        588 - pipe[1],
+        pipeWidth,
+        pipe[1],
+        pipe[0],
+        0,
+        pipeWidth,
+        pipe[1]
+      );
+      // bottom pipe
+      ctx.drawImage(
+        img,
+        432 + pipeWidth,
+        108,
+        pipeWidth,
+        canvas.height - pipe[1] + pipeGap,
+        pipe[0],
+        pipe[1] + pipeGap,
+        pipeWidth,
+        canvas.height - pipe[1] + pipeGap
+      );
+
+      if (pipe[0] <= -pipeWidth) {
+        currentScore++;
+        bestScore = Math.max(bestScore, currentScore);
+
+        // remove pipe + add new one
+        pipes = [
+          ...pipes.slice(1),
+          [pipes[pipes.length - 1][0] + pipeGap + pipeWidth, pipeLoc()],
+        ];
+      }
+      // if hit the pipe => game over
+      if (
+        [
+          pipe[0] <= cTenth + size[0],
+          pipe[0] + pipeWidth >= cTenth,
+          pipe[1] > flyHeight || pipe[1] + pipeGap < flyHeight + size[1],
+        ].every((elem) => elem)
+      ) {
+        gamePlaying = false;
+        setup();
+      }
+    });
+  }
+  document.getElementById(
+    "bestScore"
+  ).innerHTML = `Meilleur score : ${bestScore}`;
+  document.getElementById(
+    "currentScore"
+  ).innerHTML = `Score actuel : ${currentScore}`;
+
   window.requestAnimationFrame(render);
 };
 
